@@ -17,7 +17,9 @@
   (define (assign var expr) (assign-noeval var (eval-expr expr)))
   (define (eval-assignment assignment)
     (match assignment
-      [(list ':= var expr) (assign var expr)]))
+      [(list ':= var expr) (assign var expr)]
+      ;;[(list 'debug expr) (display (eval-expr expr))]
+      ))
   (define (eval-jump jump)
     (define (goto label) (eval-block (eval-expr label)))
     (match jump

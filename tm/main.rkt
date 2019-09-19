@@ -1,6 +1,6 @@
 #lang racket
 
-(require "../flowchart/main.rkt")
+(provide tm-int)
 
 (define tm-int
   '((read program right)
@@ -8,7 +8,7 @@
             (:= left '())
             (goto loop0))
     (loop0  (if (null? ptail) ret loop1))
-    (loop1  (:= curp (cdr (car ptail)))
+    (loop1  (:= curp (cdar ptail))
             (if (equal? (car curp) 'left) pleft loop2))
     (loop2  (if (equal? (car curp) 'right) pright loop3))
     (loop3  (if (equal? (car curp) 'write) pwrite loop4))
@@ -25,7 +25,7 @@
             (:= left (cons tmp left))
             (:= right (cdr right))
             (goto next))
-    (pwrite (:= elem (car (cdr curp)))
+    (pwrite (:= elem (cadr curp))
             (if (null? right) wrnull wrnn))
     (wrnull (:= right `(,elem))
             (goto next))
@@ -33,25 +33,15 @@
             (goto next))
     (pgoto  (:= ptail program)
             (goto gtloop))
-    (gtloop (if (equal? (car (cdr curp)) (car (car ptail))) loop0 gtiter))
+    (gtloop (if (equal? (cadr curp) (caar ptail)) loop0 gtiter))
     (gtiter (:= ptail (cdr ptail))
             (goto gtloop))
     (pif    (if (null? right) ifnull ifnn))
-    (ifnull (if (equal? (car (cdr (cdr curp))) " ") ifgt next))
-    (ifnn   (if (equal? (car (cdr (cdr curp))) (car right)) ifgt next))
-    (ifgt   (:= curp (cdr (cdr curp)))
+    (ifnull (if (equal? (cadr curp) " ") ifgt next))
+    (ifnn   (if (equal? (cadr curp) (car right)) ifgt next))
+    (ifgt   (:= curp (cddr curp))
             (goto pgoto))
     (next   (:= ptail (cdr ptail))
             (goto loop0))
     (ret    (return right))
     ))
-
-(define tm-example '((0 if 0 goto 3)
-                     (1 right)
-                     (2 goto 0)
-                     (3 write 1)))
-
-(display (int tm-int `(,tm-example (0 1 0 1))))
-
-(define tm-sample '((0 write 1)))
-(display (int tm-int `(,tm-sample ())))
