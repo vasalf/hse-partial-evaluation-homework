@@ -5,21 +5,34 @@
 (require racket/match)
 
 (define (int program data)
-  (define read-bounds
+  (define (read-block program)
     (match (car program)
+      [(list 'read v ...) (car program)]
+      [(list 'import v ...) (cadr program)]))
+  (define read-bounds
+    (match (read-block program)
       [(list 'read v ...) v]))
-  (define lbl-blocks (cdr program))
+  (define import-list
+    (match (car program)
+      [(list 'read v ...) '()]
+      [(list 'import v ...) v]))
+  (define lbl-blocks
+    (match (car program)
+      [(list 'read v ...) (cdr program)]
+      [(list 'import v ...) (cddr program)]))
   (define first-block (cdr (car lbl-blocks)))
   (define ns (make-base-namespace))
   (define (eval-expr expr) (parameterize ([current-namespace ns]) (eval expr)))
   (define (assign-noeval var value) (parameterize ([current-namespace ns])
                               (namespace-set-variable-value! var value)))
+  (define (assign-noeval/pair p)
+    (match p
+      [(cons symbol value) (assign-noeval symbol value)]))
   (define (assign var expr) (assign-noeval var (eval-expr expr)))
   (define (eval-assignment assignment)
     (match assignment
       [(list ':= var expr) (assign var expr)]
-      ;;[(list 'debug expr) (display (eval-expr expr))]
-      ))
+      [(list 'debug expr) (display (eval-expr expr))]))
   (define (eval-jump jump)
     (define (goto label) (eval-block (eval-expr label)))
     (match jump
@@ -33,7 +46,8 @@
        (map eval-assignment assignments)
        (eval-jump jump)]))
   (define (bind-block lbl-block) (assign-noeval (car lbl-block) (cdr lbl-block)))
-  
+
+  (map assign-noeval/pair import-list)
   (map assign-noeval read-bounds data)
   (map bind-block lbl-blocks)
   (eval-block first-block))

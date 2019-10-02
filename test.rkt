@@ -2,6 +2,7 @@
 
 (require "flowchart/main.rkt")
 (require "tm/main.rkt")
+(require "mix/naive.rkt")
 
 (define find-name
   '((read name namelist valuelist)
@@ -12,8 +13,8 @@
     (found (return (car valuelist)))
    ))
 
+(display "==== HW1 ====\n")
 (display (int find-name '(y (x y z) (1 2 3))))
-
 (display "\n")
 
 (define tm-example
@@ -23,3 +24,10 @@
     (3 write 1)))
 
 (display (int tm-int `(,tm-example (1 1 1 0 1 0 1))))
+(display "\n\n")
+
+(display "==== HW2 ====\n")
+(define fc-example
+  '((read x y)
+    (block (return x))))
+(display (int mix-naïve `(,fc-example (x) ((x . 179)))))
