@@ -1,0 +1,44 @@
+#lang racket
+
+(provide prettyprint)
+
+(define (prettyprint program)
+  (define (spaces-at block)
+    (+ 2 (string-length (symbol->string (car block)))))
+  (define spaces (apply max (map spaces-at program)))
+  (define (print-block block)
+    (match block
+      [(list 'import v ...) '()]
+      [(list 'read v ...) (print-read-block block)]
+      [(list id v ...) (print-base-block block)]))
+  (define (print-read-block block)
+    (define (display-id id)
+      (display " ")
+      (display id))
+    (display "read")
+    (map display-id (cdr block))
+    (display ";\n"))
+  (define (print-base-block block)
+    (define (print-stmt stmt)
+      (cond
+        [(equal? ':= (car stmt)) (print-assgn stmt)]
+        [else (print-not-assgn stmt)]))
+    (define (print-assgn stmt)
+      (display (cadr stmt))
+      (display " := ")
+      (display (caddr stmt))
+      (display ";\n"))
+    (define (print-not-assgn stmt)
+      (define (space-before e) (display " ") (display e))
+      (display (car stmt))
+      (map space-before (cdr stmt))
+      (display ";\n"))
+    (define (print-stmt-spaces stmt)
+      (display (make-string spaces #\space))
+      (print-stmt stmt))
+    (display (car block))
+    (display ":")
+    (display (make-string (- (- spaces (string-length (symbol->string (car block)))) 1) #\space))
+    (print-stmt (cadr block))
+    (map print-stmt-spaces (cddr block)))
+  (map print-block program))
