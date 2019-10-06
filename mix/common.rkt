@@ -7,6 +7,7 @@
          first-command
          bb-tail
          extend-vs
+         reduce-vs
          block-name
          extend-unmarked
          eval-expr
@@ -33,18 +34,28 @@
 
 (define (first-command bb) (cadr bb))
 
-(define (bb-tail bb) (cddr bb))
+(define (bb-tail bb) (append `(,(car bb)) (cddr bb)))
 
-(define (extend-vs vs x expr) (append vs `(,x . ,expr)))
+(define (extend-vs vs x expr)
+  (cond
+    [(null? vs) `(,x . ,expr)]
+    [(equal? x (caar vs)) (cons `(,x . ,expr) (cdr vs))]
+    [else (cons (car vs) (extend-vs (cdr vs) x expr))]))
+
+(define (reduce-vs vs x)
+  (cond
+    [(null? vs) '()]
+    [(equal? x (caar vs)) (cdr vs)]
+    [else (cons (car vs) (reduce-vs (cdr vs) x))]))
 
 (define (block-name pp vs) `(,pp . ,vs))
 
 (define (extend-unmarked pending ps marked)
-  (define (extend-once p ps)
+  (define (extend-once ps p)
     (cond
       [(member p marked) ps]
-      [else (append ps p)]))
-  (extend-once (extend-once pending (car ps) marked) (cadr ps) marked))
+      [else (append ps (list p))]))
+  (extend-once (extend-once pending (car ps)) (cadr ps)))
 
 (define (eval-expr expr vs)
   (define ns (make-base-namespace))
@@ -65,23 +76,27 @@
       [(is-dynamic-symb? symb) #f]
       [else #t]))
   (match expr
+    [(list 'quote v ...) #t]
     [(list v ...) (andmap self-ap v)]
     [(var symb)   (ans-symb symb)]))
 
 (define (reduce expr vs division)
   (define (self-ap e) (reduce e vs division))
-  (cond
-    [(is-static-expr? expr division) (eval-expr expr vs)]
-    [else (match expr
-            [(list v ...) (map self-ap v)]
-            [(var symb) symb])]))
+  (match expr
+    [(list 'quote v ...) expr]
+    [(list v ...) (cond
+                    [(is-static-expr? expr division) (eval-expr expr vs)]
+                    [else (map self-ap v)])]
+    [(var symb) (cond
+                  [(is-static-symb? symb division) (eval-expr expr vs)]
+                  [else expr])]))
 
 (define (normalize-blocks program)
   (define h (make-hash))
   (define max-id (make-hash))
   (define (norm-add-id id)
     (define new-id (+ 1 (hash-ref max-id (car id))))
-    (define upd-id (string->symbol (string-append (symbol->string (car id)) (~v new-id))))
+    (define upd-id (string->symbol (string-append (symbol->string (car id)) "!" (~v new-id))))
     (hash-set! max-id (car id) new-id)
     (hash-set! h id upd-id)
     upd-id)

@@ -29,12 +29,19 @@
   (display "\n\n")
 
   (display "==== HW2 (big, hard, painful, and a bit philosophical) ====\n")
-  (define fc-example
-    '((read x y)
-      (block (return x))))
+  (display "I Futamura Projection:\n")
+  (define tm-int-division
+    '((program ptail curp elem)
+      (right left tmp)))
+  (define tm-int-vs
+    `((program . ,tm-example)
+      (ptail . '())
+      (curp . '())
+      (elem . '())))
+  (prettyprint (int mix-naïve `(,tm-int ,tm-int-division ,tm-int-vs)))
+  (define interpret (int mix-naïve `(,tm-int ,tm-int-division ,tm-int-vs)))
+  (print (int interpret'((1 1 1 0 1 0 1))))
   
-  (prettyprint (int mix-naïve `(,fc-example ((x) (y)) ((x . 179)))))
-
-  )
+  '())
 
 (main)
