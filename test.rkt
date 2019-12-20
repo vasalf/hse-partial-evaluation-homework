@@ -41,7 +41,16 @@
   (prettyprint (int mix-naïve `(,tm-int ,tm-int-division ,tm-int-vs)))
   (define interpret (int mix-naïve `(,tm-int ,tm-int-division ,tm-int-vs)))
   (print (int interpret'((1 1 1 0 1 0 1))))
-  
+
+  (display "\n\nII Futamura Projection, naïve version:\n")
+  (define mix-naïve-division
+    '((program division)
+      (vs0 pending marked residual pp bb vs code command x e ift iff nift niff ps)))
+  (define mix-naïve-vs
+    `((program . ,tm-int)
+      (division . ,tm-int-division)))
+  (prettyprint (int mix-naïve `(,mix-naïve ,mix-naïve-division ,mix-naïve-vs)))
+  (display "\nAs expected, it did nothing. The reason is that in the naïve mix virtually all variables are static. And the next task is to fix it.\n")
   '())
 
 (main)

@@ -67,29 +67,84 @@
 
 (define (initial-code pp vs) `(,(block-name pp vs)))
 
-(define (is-static-expr? expr division)
+(define (is-static-expr-cnt? expr division qql)
   (define (is-dynamic-symb? symb) (member symb (cadr division)))
-  (define (self-ap e) (is-static-expr? e division))
   (define (ans-symb symb)
     (cond
       [(is-static-symb? symb division) #t]
       [(is-dynamic-symb? symb) #f]
       [else #t]))
-  (match expr
-    [(list 'quote v ...) #t]
-    [(list v ...) (andmap self-ap v)]
-    [(var symb)   (ans-symb symb)]))
+  (define (ans-rec expr division qql)
+    (define (self-ap e)    (ans-rec e division qql))
+    (define (self-ap-qq e) (ans-rec e division (+ qql 1)))
+    (define (self-ap-uq e) (ans-rec e division (- qql 1)))
+    (match expr
+      [(list 'quote v ...)      #t]
+      [(list 'quasiquote v ...) (andmap self-ap-qq v)]
+      [(list 'unquote v ...)    (andmap self-ap-uq v)]
+      [(list v ...)             (andmap self-ap    v)]
+      [(var symb)               (ans-symb symb)]))
+  (ans-rec expr division qql))
 
-(define (reduce expr vs division)
-  (define (self-ap e) (reduce e vs division))
-  (match expr
-    [(list 'quote v ...) expr]
-    [(list v ...) (cond
-                    [(is-static-expr? expr division) (eval-expr expr vs)]
-                    [else (map self-ap v)])]
-    [(var symb) (cond
-                  [(is-static-symb? symb division) (eval-expr expr vs)]
-                  [else expr])]))
+(define (is-static-expr? expr division)
+  (is-static-expr-cnt? expr division 0))
+
+;(define (reduce expr vs division)
+;  (define (self-ap e) (reduce e vs division))
+;  (match expr
+;    [(list 'quote v ...) expr]
+;    [(list v ...) (cond
+;                    [(is-static-expr? expr division) (eval-expr expr vs)]
+;                    [else (map self-ap v)])]
+;    [(var symb) (cond
+;                  [(is-static-symb? symb division) (eval-expr expr vs)]
+;                  [else expr])]))
+
+(define (expand-division division imports)
+  (define (expand-division-once d v)
+    (match v
+      [(cons var val) `(,(append (car d) `(,var)) ,(cadr d))]))
+  (define (run d v)
+    (match v
+      [(list) d]
+      [(list v ...) (run (expand-division-once d (car v)) (cdr v))]))
+  (match imports
+    [(list 'import v ...) (run division v)]
+    [(list) division]))
+
+(define (expand-vs0 vs0 imports)
+  (define (expand-vs0-once vs0 v)
+    (append `(,v) vs0))
+  (define (run d v)
+    (match v
+      [(list) d]
+      [(list v ...) (run (expand-vs0-once d (car v)) (cdr v))]))
+  (match imports
+    [(list 'import v ...) (run vs0 v)]
+    [(list) vs0]))
+
+(define (reduce expr vs0 div imports)
+  (define division (expand-division div imports))
+  (define vs (expand-vs0 vs0 imports)) 
+  (define (ans-rec expr vs division qql)
+    (define (self-ap    e) (ans-rec e vs division qql))
+    (define (self-ap-qq e) (ans-rec e vs division (+ qql 1)))
+    (define (self-ap-uq e) (ans-rec e vs division (- qql 1)))
+    (match expr
+      [(list 'quote      v ...) expr]
+      [(list 'quasiquote v ...) (cond
+                                  [(> qql 0)                               expr]
+                                  [(is-static-expr-cnt? expr division qql) (eval-expr expr vs)]
+                                  [else                                    (append '(quasiquote) (map self-ap-qq v))])]
+      [(list 'unquote    v ...) (append '(unquote) (map self-ap-uq v))]
+      [(list             v ...) (cond
+                                  [(is-static-expr-cnt? expr division qql) (eval-expr expr vs)]
+                                  [else                                    (map self-ap v)])]
+      [(var symb)               (cond
+                                  [(> qql 0)                       expr]
+                                  [(is-static-symb? symb division) (eval-expr expr vs)]
+                                  [else                            expr])]))
+  (ans-rec expr vs division 0))
 
 (define (normalize-blocks program)
   (define h (make-hash))
