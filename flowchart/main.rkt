@@ -30,10 +30,13 @@
       [(cons symbol value) (assign-noeval symbol value)]))
   (define (assign var expr) (assign-noeval var (eval-expr expr)))
   (define (eval-assignment assignment)
+    ; (println assignment)
     (match assignment
       [(list ':= var expr) (assign var expr)]
-      [(list 'debug expr) (display (eval-expr expr))]))
+      [(list 'pause) (read-line (current-input-port) 'any)]
+      [(list 'debug exprs ...) (println (map eval-expr exprs))]))
   (define (eval-jump jump)
+    ; (println jump)
     (define (goto label) (eval-block (eval-expr label)))
     (match jump
       [(list 'goto label) (goto label)]
@@ -51,3 +54,4 @@
   (map assign-noeval read-bounds data)
   (map bind-block lbl-blocks)
   (eval-block first-block))
+
