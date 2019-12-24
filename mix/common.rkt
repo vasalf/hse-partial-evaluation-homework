@@ -23,10 +23,7 @@
 
 (define (init-residual program division)
   (define (is-dynamic-symb? symb) (not (is-static-symb? symb division)))
-  (cond
-    [(equal? (caar program) 'import) `(,(import-stmt program)
-                                       ,(filter is-dynamic-symb? (read-stmt program)))]
-    [else `(,(filter is-dynamic-symb? (read-stmt program)))]))
+  `(,(filter is-dynamic-symb? (read-stmt program))))
 
 (define (is-static-symb? symb division) (member symb (car division)))
 
