@@ -1,5 +1,7 @@
 ## `test.rkt` output:
 
+(You can also read the compiler in the `comiler.fc` file in a slightly more readable format)
+
 ```
 ==== HW1 ====
 2
@@ -36,9 +38,9 @@ end!0:     return ((quote #<procedure:normalize-blocks>) residual);
 loopb!0:   pp := ('#<procedure:caar> pending);
            vs := ('#<procedure:cadar> pending);
            pending := ('#<procedure:cdr> pending);
-           marked := ('#<procedure:cons> ('#<procedure:block-name> pp vs '((program ptail curp elem) (right left tmp) (program ptail curp elem))) marked);
+           marked := ('#<procedure:cons> ('#<procedure:block-name> pp vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem)))) marked);
            bb := ('#<procedure:lookup> pp '((read program right) (init (:= ptail program) (:= left '()) (goto loop0)) (loop0 (if (null? ptail) ret loop1)) (loop1 (:= curp (cdar ptail)) (if (equal? (car curp) 'left) pleft loop2)) (loop2 (if (equal? (car curp) 'right) pright loop3)) (loop3 (if (equal? (car curp) 'write) pwrite loop4)) (loop4 (if (equal? (car curp) 'goto) pgoto loop5)) (loop5 (if (equal? (car curp) 'if) pif ret)) (pleft (if (null? left) plnull plnn)) (plnull (:= right (cons " " right)) (goto next)) (plnn (:= tmp (car left)) (:= left (cdr left)) (:= right (cons tmp right)) (goto next)) (pright (if (null? right) prnull prnn)) (prnull (:= left (cons " " left)) (goto next)) (prnn (:= tmp (car right)) (:= left (cons tmp left)) (:= right (cdr right)) (goto next)) (pwrite (:= elem (cadr curp)) (if (null? right) wrnull wrnn)) (wrnull (:= right `(,elem)) (goto next)) (wrnn (:= right (cons elem (cdr right))) (goto next)) (pgoto (:= ptail program) (goto gtloop)) (gtloop (if (equal? (cadr curp) (caar ptail)) loop0 gtiter)) (gtiter (:= ptail (cdr ptail)) (goto gtloop)) (pif (if (null? right) ifnull ifnn)) (ifnull (if (equal? (cadr curp) " ") ifgt next)) (ifnn (if (equal? (cadr curp) (car right)) ifgt next)) (ifgt (:= curp (cddr curp)) (goto pgoto)) (next (:= ptail (cdr ptail)) (goto loop0)) (ret (return right))));
-           code := ('#<procedure:initial-code> pp vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)));
+           code := ('#<procedure:initial-code> pp vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
            if ((quote #<procedure:<>) ((quote #<procedure:length>) bb) (quote 2)) endbb!0 loopbbb!0;
 endbb!0:   residual := ('#<procedure:extend-code> residual code);
            if ((quote #<procedure:null?>) pending) end!0 loopb!0;
@@ -63,10 +65,10 @@ casebb4!0: if ((quote #<procedure:equal?>) ((quote #<procedure:car>) command) (q
 sif!0:     if ((quote #<procedure:eval-expr>) ((quote #<procedure:cadr>) command) vs (quote ())) sift!0 siff!0;
 dif!0:     ift := ('#<procedure:caddr> command);
            iff := ('#<procedure:cadddr> command);
-           nift := ('#<procedure:block-name> ift vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)));
-           niff := ('#<procedure:block-name> iff vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)));
+           nift := ('#<procedure:block-name> ift vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+           niff := ('#<procedure:block-name> iff vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
            ps := `((,ift ,vs) (,iff ,vs));
-           pending := ('#<procedure:extend-unmarked> pending ps marked '((program ptail curp elem) (right left tmp) (program ptail curp elem)));
+           pending := ('#<procedure:extend-unmarked> pending ps marked '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
            e := ('#<procedure:reduce> ('#<procedure:cadr> command) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
            code := ('#<procedure:extend-bb> code `(if ,e ,nift ,niff));
            if ((quote #<procedure:<>) ((quote #<procedure:length>) bb) (quote 2)) endbb!0 loopbbb!0;
@@ -99,7 +101,6 @@ wrnn!0:   right := ('#<procedure:cons> '1 ('#<procedure:cdr> right));
 As expected, it did nothing. The reason is that in the naïve mix virtually all variables are static. And the next task is to fix it.
 
 I Futamura Projection:
-'(10)
 read right;
 init!0:   left := '();
           if ((quote #<procedure:null?>) right) ifnull!0 ifnn!0;
@@ -120,13 +121,140 @@ wrnn!0:   right := ('#<procedure:cons> '1 ('#<procedure:cdr> right));
 '(1 1 0 1)
 
  II Futamura Projection:
-'(403)
-
-...
-See <compiler.fc>, as it is *really* large;
-I'm working on it.
-...
-
+read vs0;
+init!0:     pending := `((,'init ,vs0));
+            marked := `(,('#<procedure:block-name> ('#<procedure:caar> pending) vs0 '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem)))));
+            residual := '((read right));
+            if ((quote #<procedure:null?>) pending) end!0 loopb!0;
+end!0:      return ((quote #<procedure:normalize-blocks>) residual);
+loopb!0:    pp := ('#<procedure:caar> pending);
+            vs := ('#<procedure:cadar> pending);
+            pending := ('#<procedure:cdr> pending);
+            code := ('#<procedure:initial-code> pp vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            if ((quote #<procedure:equal?>) (quote init) pp) loopppp!0 looppp2!0;
+loopppp!0:  vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> 'program vs '()));
+            ex := ('#<procedure:reduce> ''() vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(:= ,'left ,ex));
+            if ((quote #<procedure:eval-expr>) (quote (null? ptail)) vs (quote ())) sift!0 siff!0;
+looppp2!0:  if ((quote #<procedure:equal?>) (quote plnull) pp) loopppp!1 looppp2!1;
+sift!0:     ex := ('#<procedure:reduce> 'right vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(return ,ex));
+            residual := ('#<procedure:extend-code> residual code);
+            if ((quote #<procedure:null?>) pending) end!0 loopb!0;
+siff!0:     vs := ('#<procedure:extend-vs> vs 'curp ('#<procedure:eval-expr> '(cdar ptail) vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (equal? (car curp) (quote left))) vs (quote ())) sift!1 siff!1;
+loopppp!1:  ex := ('#<procedure:reduce> '(cons " " right) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(:= ,'right ,ex));
+            vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> '(cdr ptail) vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (null? ptail)) vs (quote ())) sift!0 siff!0;
+looppp2!1:  if ((quote #<procedure:equal?>) (quote plnn) pp) loopppp!2 looppp2!2;
+sift!1:     nift := ('#<procedure:block-name> 'plnull vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            niff := ('#<procedure:block-name> 'plnn vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            ps := `((,'plnull ,vs) (,'plnn ,vs));
+            pending := ('#<procedure:extend-unmarked> pending ps marked '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            marked := ('#<procedure:add-to-marked> `(,niff ,nift) marked);
+            ex := ('#<procedure:reduce> '(null? left) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(if ,ex ,nift ,niff));
+            residual := ('#<procedure:extend-code> residual code);
+            if ((quote #<procedure:null?>) pending) end!0 loopb!0;
+siff!1:     if ((quote #<procedure:eval-expr>) (quote (equal? (car curp) (quote right))) vs (quote ())) sift!2 siff!2;
+loopppp!2:  ex := ('#<procedure:reduce> '(car left) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(:= ,'tmp ,ex));
+            ex := ('#<procedure:reduce> '(cdr left) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(:= ,'left ,ex));
+            ex := ('#<procedure:reduce> '(cons tmp right) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(:= ,'right ,ex));
+            vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> '(cdr ptail) vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (null? ptail)) vs (quote ())) sift!0 siff!0;
+looppp2!2:  if ((quote #<procedure:equal?>) (quote prnull) pp) loopppp!3 looppp2!3;
+sift!2:     nift := ('#<procedure:block-name> 'prnull vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            niff := ('#<procedure:block-name> 'prnn vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            ps := `((,'prnull ,vs) (,'prnn ,vs));
+            pending := ('#<procedure:extend-unmarked> pending ps marked '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            marked := ('#<procedure:add-to-marked> `(,niff ,nift) marked);
+            ex := ('#<procedure:reduce> '(null? right) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(if ,ex ,nift ,niff));
+            residual := ('#<procedure:extend-code> residual code);
+            if ((quote #<procedure:null?>) pending) end!0 loopb!0;
+siff!2:     if ((quote #<procedure:eval-expr>) (quote (equal? (car curp) (quote write))) vs (quote ())) sift!3 siff!3;
+loopppp!3:  ex := ('#<procedure:reduce> '(cons " " left) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(:= ,'left ,ex));
+            vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> '(cdr ptail) vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (null? ptail)) vs (quote ())) sift!0 siff!0;
+looppp2!3:  if ((quote #<procedure:equal?>) (quote prnn) pp) loopppp!4 looppp2!4;
+sift!3:     vs := ('#<procedure:extend-vs> vs 'elem ('#<procedure:eval-expr> '(cadr curp) vs '()));
+            nift := ('#<procedure:block-name> 'wrnull vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            niff := ('#<procedure:block-name> 'wrnn vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            ps := `((,'wrnull ,vs) (,'wrnn ,vs));
+            pending := ('#<procedure:extend-unmarked> pending ps marked '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            marked := ('#<procedure:add-to-marked> `(,niff ,nift) marked);
+            ex := ('#<procedure:reduce> '(null? right) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(if ,ex ,nift ,niff));
+            residual := ('#<procedure:extend-code> residual code);
+            if ((quote #<procedure:null?>) pending) end!0 loopb!0;
+siff!3:     if ((quote #<procedure:eval-expr>) (quote (equal? (car curp) (quote goto))) vs (quote ())) sift!4 siff!4;
+loopppp!4:  ex := ('#<procedure:reduce> '(car right) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(:= ,'tmp ,ex));
+            ex := ('#<procedure:reduce> '(cons tmp left) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(:= ,'left ,ex));
+            ex := ('#<procedure:reduce> '(cdr right) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(:= ,'right ,ex));
+            vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> '(cdr ptail) vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (null? ptail)) vs (quote ())) sift!0 siff!0;
+looppp2!4:  if ((quote #<procedure:equal?>) (quote wrnull) pp) loopppp!5 looppp2!5;
+sift!4:     vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> 'program vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (equal? (cadr curp) (caar ptail))) vs (quote ())) sift!5 siff!5;
+siff!4:     if ((quote #<procedure:eval-expr>) (quote (equal? (car curp) (quote if))) vs (quote ())) sift!6 siff!6;
+loopppp!5:  ex := ('#<procedure:reduce> '`(,elem) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(:= ,'right ,ex));
+            vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> '(cdr ptail) vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (null? ptail)) vs (quote ())) sift!0 siff!0;
+looppp2!5:  if ((quote #<procedure:equal?>) (quote wrnn) pp) loopppp!6 looppp2!6;
+sift!5:     if ((quote #<procedure:eval-expr>) (quote (null? ptail)) vs (quote ())) sift!0 siff!0;
+siff!5:     vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> '(cdr ptail) vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (equal? (cadr curp) (caar ptail))) vs (quote ())) sift!5 siff!5;
+sift!6:     nift := ('#<procedure:block-name> 'ifnull vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            niff := ('#<procedure:block-name> 'ifnn vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            ps := `((,'ifnull ,vs) (,'ifnn ,vs));
+            pending := ('#<procedure:extend-unmarked> pending ps marked '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            marked := ('#<procedure:add-to-marked> `(,niff ,nift) marked);
+            ex := ('#<procedure:reduce> '(null? right) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(if ,ex ,nift ,niff));
+            residual := ('#<procedure:extend-code> residual code);
+            if ((quote #<procedure:null?>) pending) end!0 loopb!0;
+siff!6:     ex := ('#<procedure:reduce> 'right vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(return ,ex));
+            residual := ('#<procedure:extend-code> residual code);
+            if ((quote #<procedure:null?>) pending) end!0 loopb!0;
+loopppp!6:  ex := ('#<procedure:reduce> '(cons elem (cdr right)) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(:= ,'right ,ex));
+            vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> '(cdr ptail) vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (null? ptail)) vs (quote ())) sift!0 siff!0;
+looppp2!6:  if ((quote #<procedure:equal?>) (quote ifnull) pp) loopppp!7 looppp2!7;
+loopppp!7:  if ((quote #<procedure:eval-expr>) (quote (equal? (cadr curp)  )) vs (quote ())) sift!7 siff!7;
+looppp2!7:  if ((quote #<procedure:equal?>) (quote ifnn) pp) loopppp!8 looppp2!8;
+sift!7:     vs := ('#<procedure:extend-vs> vs 'curp ('#<procedure:eval-expr> '(cddr curp) vs '()));
+            vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> 'program vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (equal? (cadr curp) (caar ptail))) vs (quote ())) sift!5 siff!5;
+siff!7:     vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> '(cdr ptail) vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (null? ptail)) vs (quote ())) sift!0 siff!0;
+loopppp!8:  nift := ('#<procedure:block-name> 'ifgt vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            niff := ('#<procedure:block-name> 'next vs '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            ps := `((,'ifgt ,vs) (,'next ,vs));
+            pending := ('#<procedure:extend-unmarked> pending ps marked '#hash((ifgt . (program curp)) (ifnn . (program ptail curp)) (ifnull . (program ptail curp)) (init . (program)) (next . (program ptail)) (plnn . (program ptail)) (plnull . (program ptail)) (prnn . (program ptail)) (prnull . (program ptail)) (wrnn . (program ptail elem)) (wrnull . (program ptail elem))));
+            marked := ('#<procedure:add-to-marked> `(,niff ,nift) marked);
+            ex := ('#<procedure:reduce> '(equal? (cadr curp) (car right)) vs '((program ptail curp elem) (right left tmp) (program ptail curp elem)) '());
+            code := ('#<procedure:extend-bb> code `(if ,ex ,nift ,niff));
+            residual := ('#<procedure:extend-code> residual code);
+            if ((quote #<procedure:null?>) pending) end!0 loopb!0;
+looppp2!8:  if ((quote #<procedure:equal?>) (quote ifgt) pp) loopppp!9 looppp2!9;
+loopppp!9:  vs := ('#<procedure:extend-vs> vs 'curp ('#<procedure:eval-expr> '(cddr curp) vs '()));
+            vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> 'program vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (equal? (cadr curp) (caar ptail))) vs (quote ())) sift!5 siff!5;
+looppp2!9:  if ((quote #<procedure:equal?>) (quote next) pp) loopppp!10 looppp2!10;
+loopppp!10: vs := ('#<procedure:extend-vs> vs 'ptail ('#<procedure:eval-expr> '(cdr ptail) vs '()));
+            if ((quote #<procedure:eval-expr>) (quote (null? ptail)) vs (quote ())) sift!0 siff!0;
+looppp2!10: return (quote lb-error);
 read right;
 init!0:   left := '();
           if ((quote #<procedure:null?>) right) ifnull!0 ifnn!0;

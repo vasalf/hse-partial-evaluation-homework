@@ -46,12 +46,13 @@
 
   (display "\n\nII Futamura Projection, naïve version:\n")
   (define mix-naïve-division
-    '((program division)
+    '((program division live-variables)
       (vs0 pending marked residual pp bb vs code command x e ift iff nift niff ps)
-      (program division)))
+      (program division live-variables)))
   (define mix-naïve-vs
     `((program . ,tm-int)
-      (division . ,tm-int-division)))
+      (division . ,tm-int-division)
+      (live-variables . ())))
   (define mix-naïve-compiler (int mix-naïve `(,mix-naïve ,mix-naïve-division ,mix-naïve-vs)))
   (prettyprint mix-naïve-compiler)
   (define mix-naïve-tm-program
@@ -67,21 +68,22 @@
 
   (display "\n\n II Futamura Projection:\n")
   (define mix-division
-    '((program division labels ppp bb command x e ift iff bbh)
+    '((program division live-variables labels ppp bb command x e ift iff ifs)
       (vs0 pending marked residual pp vs code nift niff ps ex)
-      (ppp command)))
+      (program division live-variables labels ppp bb command x e ift iff ifs)))
   (define mix-vs
     `((program . ,tm-int)
       (division . ,tm-int-division)
-      (labels . '())
-      (ppp . '())
-      (bb . '())
-      (command . '())
-      (x . '())
-      (e . '())
-      (ift . '())
-      (iff . '())
-      (bbh . '())))
+      (live-variables . ())
+      (labels . ())
+      (ppp . ())
+      (bb . ())
+      (command . ())
+      (x . ())
+      (e . ())
+      (ift . ())
+      (iff . ())
+      (ifs . ())))
   (define mix-compiler (int mix `(,mix ,mix-division ,mix-vs)))
   (prettyprint mix-compiler)
   (define mix-tm-program

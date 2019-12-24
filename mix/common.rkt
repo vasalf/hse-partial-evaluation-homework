@@ -15,7 +15,8 @@
          is-static-expr?
          reduce
          normalize-blocks
-         dynamic-labels)
+         dynamic-labels
+         live-vars)
 
 (require racket/format)
 (require "../flowchart/util.rkt")
@@ -43,15 +44,15 @@
     [(equal? x (caar vs)) (cons `(,x . ,expr) (cdr vs))]
     [else (cons (car vs) (extend-vs (cdr vs) x expr))]))
 
-(define (block-name pp vs0 division)
+(define (block-name pp vs0 live-variables)
   (define vs
-    (filter (λ (v) (member (car v) (caddr division))) vs0))
+    (filter (λ (v) (set-member? (hash-ref live-variables pp) (car v))) vs0))
   `(,pp . ,vs))
 
-(define (extend-unmarked pending ps marked division)
+(define (extend-unmarked pending ps marked live-variables)
   (define (extend-once ps p)
     (cond
-      [(member (block-name (car p) (cadr p) division) marked) ps]
+      [(member (block-name (car p) (cadr p) live-variables) marked) ps]
       [else (append ps (list p))]))
   (extend-once (extend-once pending (car ps)) (cadr ps)))
 
@@ -64,7 +65,7 @@
   (map extend-once vs)
   (parameterize ([current-namespace ns]) (eval expr)))
 
-(define (initial-code pp vs division) `(,(block-name pp vs division)))
+(define (initial-code pp vs lv) `(,(block-name pp vs lv)))
 
 (define (is-static-expr-cnt? expr division qql)
   (define (is-dynamic-symb? symb) (member symb (cadr division)))
@@ -208,3 +209,72 @@
   (match ps
     [(list) marked]
     [(list p pp ...) (add-to-marked pp (extend-once p marked))]))
+
+(define (live-vars program division)
+  (define mut-at  (make-hash))
+  (define used-at (make-hash))
+
+  (define (used-in var expr)
+    (define (app e qql)
+      (define (self-ap-qq ex) (app ex (+ qql 1)))
+      (define (self-ap-uq ex) (app ex (- qql 1)))
+      (define (self-ap ex)    (app ex qql))
+      (match e
+        [(list 'quote es ...)      #f]
+        [(list 'quasiquote es ...) (ormap self-ap-qq es)]
+        [(list 'unquote es ...)    (ormap self-ap-uq es)]
+        [(list eh et ...)          (or (self-ap eh) (self-ap et))]
+        [(var symb)                (cond
+                                     [(> qql 0) #f]
+                                     [else (equal? symb var)])]))
+    (app expr 0))
+
+  (define (get-mut-used bb)
+    (define mut  (mutable-set))
+    (define used (mutable-set))
+    (define (add-used var)
+      (when (not (set-member? mut var))
+        (set-add! used var)))
+    (define (add-all-used expr)
+      (map (λ (v) (when (used-in v expr) (add-used v))) (caddr division)))
+    (define (app stmt)
+      (match stmt
+        [(list ':= var expr)
+            (add-all-used expr)
+            (set-add! mut var)]
+        [(list 'return expr)
+            (add-all-used expr)]
+        [(list 'goto label) '()]
+        [(list 'if expr l1 l2)
+            (add-all-used expr)]
+        [_ '()]))
+    (map app (cdr bb))
+    `(,mut ,used))
+
+  (map
+    (λ (bb)
+      (match (get-mut-used bb)
+        [(list mut used)
+            (hash-set! mut-at (car bb) mut)
+            (hash-set! used-at (car bb) used)]))
+    (lbl-blocks program))
+
+  (define (next lbl)
+    (match (last (lookup lbl program))
+      [(list 'return expr) '()]
+      [(list 'goto lbl) `(,lbl)]
+      [(list 'if e l1 l2) `(,l1 ,l2)]))
+
+  (define (dfs lbl var vis)
+    (cond [(set-member? vis lbl) #f] [else
+      (set-add! vis lbl)
+      (cond [(set-member? (hash-ref used-at lbl) var) #t] [else
+        (cond [(set-member? (hash-ref mut-at lbl) var) #f] [else
+          (ormap (λ (nlbl) (dfs nlbl var vis)) (next lbl))])])]))
+
+  (define (vars-for lbl)
+    (filter (λ (var) (dfs lbl var (mutable-set))) (caddr division)))
+
+  (define ret (make-hash))
+  (map (λ (lbl) (hash-set! ret lbl (vars-for lbl))) (dynamic-labels program division))
+  ret)
