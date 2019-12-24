@@ -33,8 +33,7 @@
   (display "I Futamura Projection:\n")
   (define tm-int-division
     '((program ptail curp elem)
-      (right left tmp)
-      (program ptail curp elem)))
+      (right left tmp)))
   (define tm-int-vs
     `((program . ,tm-example)
       (ptail . '())
@@ -47,8 +46,7 @@
   (display "\n\nII Futamura Projection, naïve version:\n")
   (define mix-naïve-division
     '((program division live-variables)
-      (vs0 pending marked residual pp bb vs code command x e ift iff nift niff ps)
-      (program division live-variables)))
+      (vs0 pending marked residual pp bb vs code command x e ift iff nift niff ps)))
   (define mix-naïve-vs
     `((program . ,tm-int)
       (division . ,tm-int-division)
@@ -69,8 +67,7 @@
   (display "\n\n II Futamura Projection:\n")
   (define mix-division
     '((program division live-variables labels ppp bb command x e ift iff ifs)
-      (vs0 pending marked residual pp vs code nift niff ps ex)
-      (program division live-variables labels ppp bb command x e ift iff ifs)))
+      (vs0 pending marked residual pp vs code nift niff ps ex)))
   (define mix-vs
     `((program . ,tm-int)
       (division . ,tm-int-division)

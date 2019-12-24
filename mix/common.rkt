@@ -236,7 +236,7 @@
       (when (not (set-member? mut var))
         (set-add! used var)))
     (define (add-all-used expr)
-      (map (λ (v) (when (used-in v expr) (add-used v))) (caddr division)))
+      (map (λ (v) (when (used-in v expr) (add-used v))) (car division)))
     (define (app stmt)
       (match stmt
         [(list ':= var expr)
@@ -273,7 +273,7 @@
           (ormap (λ (nlbl) (dfs nlbl var vis)) (next lbl))])])]))
 
   (define (vars-for lbl)
-    (filter (λ (var) (dfs lbl var (mutable-set))) (caddr division)))
+    (filter (λ (var) (dfs lbl var (mutable-set))) (car division)))
 
   (define ret (make-hash))
   (map (λ (lbl) (hash-set! ret lbl (vars-for lbl))) (dynamic-labels program division))
