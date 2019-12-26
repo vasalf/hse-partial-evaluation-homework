@@ -1,3 +1,5 @@
+![loopppp!](leonid.jpg)
+
 ## `test.rkt` output:
 
 (You can also read the compiler in the `comiler.fc` file in a slightly more readable format)
